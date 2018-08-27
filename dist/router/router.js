@@ -10,12 +10,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const mysql_1 = __importDefault(require("../mysql/mysql"));
-const bcrypt_1 = require("bcrypt");
+const bcrypt = __importStar(require("bcrypt"));
+const jwt = __importStar(require("jsonwebtoken"));
 const router = express_1.Router();
 const saltRounds = 10;
+const seed = '@hard-to-get-seed';
 router.get('/users', (req, res) => {
     const query = `
         SELECT *
@@ -31,7 +40,7 @@ router.get('/users', (req, res) => {
         else {
             res.json({
                 ok: true,
-                heroes: data
+                data: data
             });
         }
     });
@@ -54,7 +63,7 @@ router.get('/users/:id', (req, res) => {
         else {
             res.json({
                 ok: true,
-                heroe: data[0]
+                data: data[0]
             });
         }
     });
@@ -85,7 +94,7 @@ router.delete('/users/:id', (req, res) => {
 router.post('/register', (req, res) => __awaiter(this, void 0, void 0, function* () {
     const { nombre, apellido, password, correo, rol } = req.body;
     if (nombre && apellido && password && correo && rol) {
-        yield bcrypt_1.hash(password, saltRounds, (err, hash) => {
+        yield bcrypt.hash(password, saltRounds, (err, hash) => {
             if (err) {
                 console.log('Hubo un error cifrando la contraseña ', err);
                 return res.sendStatus(500).json({
@@ -144,16 +153,19 @@ router.post('/login', (req, res) => __awaiter(this, void 0, void 0, function* ()
             else {
                 let dataQuery = JSON.parse(JSON.stringify(data));
                 let pass2 = dataQuery[0].password;
-                if (!bcrypt_1.compareSync(password, pass2)) {
+                if (!bcrypt.compareSync(password, pass2)) {
                     return res.status(400).json({
                         ok: false,
                         message: 'Credenciales Incorrectas - Contraseña '
                     });
                 }
+                // Token
+                let token = jwt.sign({ user: dataQuery }, seed, { expiresIn: 14400 });
                 res.json({
                     ok: true,
                     message: 'El usuario está autenticado',
-                    user: dataQuery
+                    user: dataQuery,
+                    token
                 });
             }
         });

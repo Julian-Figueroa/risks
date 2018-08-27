@@ -1,9 +1,11 @@
 import { Router, Request, Response } from 'express';
 import MySQL from '../mysql/mysql';
-import { hash, compareSync } from 'bcrypt'
+import * as bcrypt from 'bcrypt';
+import * as jwt from 'jsonwebtoken';
 
 const router = Router();
 const saltRounds = 10;
+const seed = '@hard-to-get-seed';
 
 router.get('/users', (req: Request, res: Response) => {
 
@@ -21,7 +23,7 @@ router.get('/users', (req: Request, res: Response) => {
         } else {
             res.json({
                 ok: true,
-                heroes: data
+                data: data
             });
         }
     });
@@ -49,7 +51,7 @@ router.get('/users/:id', (req: Request, res: Response) => {
         } else {
             res.json({
                 ok: true,
-                heroe: data[0]
+                data: data[0]
             });
         }
     });
@@ -90,7 +92,7 @@ router.post('/register', async (req: Request, res: Response) => {
 
     if (nombre && apellido && password && correo && rol) {
 
-        await hash(password, saltRounds, (err, hash) => {
+        await bcrypt.hash(password, saltRounds, (err, hash) => {
             if (err) {
                 console.log('Hubo un error cifrando la contraseña ', err);
                 return res.sendStatus(500).json({
@@ -157,19 +159,22 @@ router.post('/login', async (req: Request, res: Response) => {
                 let dataQuery = JSON.parse(JSON.stringify(data));
                 let pass2 = dataQuery[0].password;
 
-                if (!compareSync(password, pass2)) {
+                if (!bcrypt.compareSync(password, pass2)) {
                     return res.status(400).json({
                         ok: false,
                         message: 'Credenciales Incorrectas - Contraseña '
                     });
                 }
 
+                // Token
+                let token = jwt.sign({ user: dataQuery }, seed, { expiresIn: 14400 });
 
 
                 res.json({
                     ok: true,
                     message: 'El usuario está autenticado',
-                    user: dataQuery
+                    user: dataQuery,
+                    token
                 });
             }
         });

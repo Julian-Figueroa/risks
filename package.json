@@ -15,12 +15,14 @@
     "body-parser": "^1.18.3",
     "copyfiles": "^2.0.0",
     "express": "^4.16.3",
+    "jsonwebtoken": "^8.3.0",
     "mysql": "github:mysqljs/mysql"
   },
   "devDependencies": {
     "@types/bcrypt": "^2.0.0",
     "@types/body-parser": "^1.17.0",
     "@types/express": "^4.16.0",
+    "@types/jsonwebtoken": "^7.2.8",
     "@types/mysql": "^2.15.5"
   }
 }
