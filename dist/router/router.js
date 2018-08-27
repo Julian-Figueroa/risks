@@ -59,6 +59,29 @@ router.get('/users/:id', (req, res) => {
         }
     });
 });
+router.delete('/users/:id', (req, res) => {
+    const id = req.params.id;
+    const escapedId = mysql_1.default.instance.cnn.escape(id);
+    const query = `
+        DELETE 
+          FROM usuarios
+         WHERE idUsuario = ${escapedId}
+    `;
+    mysql_1.default.ejecutarQuery(query, (err, data) => {
+        if (err) {
+            res.status(400).json({
+                ok: false,
+                error: err
+            });
+        }
+        else {
+            res.json({
+                ok: true,
+                heroe: data[0]
+            });
+        }
+    });
+});
 router.post('/register', (req, res) => __awaiter(this, void 0, void 0, function* () {
     const { nombre, apellido, password, correo, rol } = req.body;
     if (nombre && apellido && password && correo && rol) {
@@ -86,7 +109,7 @@ router.post('/register', (req, res) => __awaiter(this, void 0, void 0, function*
                     });
                 }
                 else {
-                    console.log('User Data: ', data[0]);
+                    //console.log('User Data: ', data[0]);
                     res.json({
                         ok: true,
                         data: data[0]

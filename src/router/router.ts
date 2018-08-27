@@ -56,6 +56,34 @@ router.get('/users/:id', (req: Request, res: Response) => {
 
 });
 
+router.delete('/users/:id', (req: Request, res: Response) => {
+
+    const id = req.params.id;
+
+    const escapedId = MySQL.instance.cnn.escape(id);
+
+    const query = `
+        DELETE 
+          FROM usuarios
+         WHERE idUsuario = ${ escapedId}
+    `;
+
+    MySQL.ejecutarQuery(query, (err: any, data: Object[]) => {
+        if (err) {
+            res.status(400).json({
+                ok: false,
+                error: err
+            });
+        } else {
+            res.json({
+                ok: true,
+                heroe: data[0]
+            });
+        }
+    });
+
+});
+
 router.post('/register', async (req: Request, res: Response) => {
 
     const { nombre, apellido, password, correo, rol } = req.body;
