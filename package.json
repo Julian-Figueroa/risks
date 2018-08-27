@@ -1,0 +1,26 @@
+{
+  "name": "mysql-typescript",
+  "version": "1.0.0",
+  "description": "Typescript",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "html": "copyfiles -u 1 src/public/*.html dist",
+    "build": "tsc && npm run html"
+  },
+  "author": "JFT",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^3.0.0",
+    "body-parser": "^1.18.3",
+    "copyfiles": "^2.0.0",
+    "express": "^4.16.3",
+    "mysql": "github:mysqljs/mysql"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^2.0.0",
+    "@types/body-parser": "^1.17.0",
+    "@types/express": "^4.16.0",
+    "@types/mysql": "^2.15.5"
+  }
+}
