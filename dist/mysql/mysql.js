@@ -42,7 +42,6 @@ class MySQL {
                 callback('El registro no existe!!');
             }
             else {
-                // console.log('Res: ', res);
                 callback(null, res);
             }
         });

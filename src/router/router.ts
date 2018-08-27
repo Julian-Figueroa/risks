@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import MySQL from '../mysql/mysql';
-import { hash } from 'bcrypt'
+import { hash, compareSync } from 'bcrypt'
 
 const router = Router();
 const saltRounds = 10;
@@ -77,7 +77,7 @@ router.delete('/users/:id', (req: Request, res: Response) => {
         } else {
             res.json({
                 ok: true,
-                heroe: data[0]
+                data: data[0]
             });
         }
     });
@@ -92,9 +92,13 @@ router.post('/register', async (req: Request, res: Response) => {
 
         await hash(password, saltRounds, (err, hash) => {
             if (err) {
-                console.log('THubo un error cifrando la contraseña ', err);
-                res.sendStatus(500);
-                return;
+                console.log('Hubo un error cifrando la contraseña ', err);
+                return res.sendStatus(500).json({
+                    ok: false,
+                    message: 'Hubo un error cifrando la contraseña',
+                    error: err
+                });
+
             }
 
             const query = `
@@ -116,7 +120,6 @@ router.post('/register', async (req: Request, res: Response) => {
                         error: err
                     });
                 } else {
-                    //console.log('User Data: ', data[0]);
                     res.json({
                         ok: true,
                         data: data[0]
@@ -125,8 +128,51 @@ router.post('/register', async (req: Request, res: Response) => {
             });
         });
     } else {
-        res.sendStatus(500);
-        return;
+        return res.status(500).json({
+            ok: false,
+            message: 'Información de usuario erronea'
+        });
+
+    }
+});
+
+router.post('/login', async (req: Request, res: Response) => {
+
+    const { password, correo } = req.body;
+
+    if (password && correo) {
+
+        const query = `
+        SELECT * FROM usuarios WHERE correo = ?
+        `;
+
+        MySQL.ejecutarDML(query, correo, (err: any, data: Object) => {
+            if (err) {
+                res.status(400).json({
+                    ok: false,
+                    message: 'Credenciales Incorectas - Correo',
+                    error: err
+                });
+            } else {
+                let dataQuery = JSON.parse(JSON.stringify(data));
+                let pass2 = dataQuery[0].password;
+
+                if (!compareSync(password, pass2)) {
+                    return res.status(400).json({
+                        ok: false,
+                        message: 'Credenciales Incorrectas - Contraseña '
+                    });
+                }
+
+
+
+                res.json({
+                    ok: true,
+                    message: 'El usuario está autenticado',
+                    user: dataQuery
+                });
+            }
+        });
     }
 });
 
